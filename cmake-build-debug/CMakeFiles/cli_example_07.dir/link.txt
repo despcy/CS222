@@ -1,0 +1,1 @@
+/Library/Developer/CommandLineTools/usr/bin/c++   -fsanitize=address -O1 -g  -fno-omit-frame-pointer -ledit -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.14.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/cli_example_07.dir/cli/cli_example_07.cc.o  -o cli_example_07 libCLI.a libQE.a libIX.a libRM.a libRBFM.a libPFM.a 

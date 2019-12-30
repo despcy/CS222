@@ -1,0 +1,66 @@
+1. Basic information
+Student ID : chenxy2   jingwm1
+Student Name :  Chenxi Yang  Jingwen Mo
+OS (bit) :64
+gcc version : gcc/5.4.0
+
+
+2. Internal Record Format
+- Show your record format design and describe how your design satisfies O(1) field access. If not, just mention that you haven't implemented this feature.
+- Describe how you store a VarChar field.
+
+The fist 2 bytes(unsigned short) of the record indicates the number of total N fields on the record.
+Then, there are N+1 blocks, each size 2 bytes(unsigned short) to represent the byte offset from the beginning of the record to the start of the data after these N+1 blocks. if there is a null field, the offset of its begin and end are the same.
+Then after that 2bytes and N+1 blocks, I store the data sequentially according to the field.
+My design satisfy O(1) because each time you access a data, you can directly get the offset of the beginning of the data and end of the data in O(1) because each offset information takes 2 bytes and their spaces are fixed. Then read the data from begin offset and read length equals to end offset(or begin offset of next field)-begin offset, which takes O(1).
+
+The varchar field is the same as data mentioned above, they are stored after the header field ,and there are information in the header which points to the beginning and the end of the varchar data.
+
+
+3. Page Format
+- Show your page format design
+
+The page uses heap file format. From top to bottom, we stored the record sequentially. From bottom to up, we store the index information.
+For the index information:
+First 2 bytes indicate the freespace pointer which is the offset points to the end of the last record.
+Then, 2 bytes for the number of slots stored in the index.
+Then store the slot sequentially from 1 to N
+For each slot:
+2 bytes for record length
+2 bytes for record offset
+
+
+4. Implementation Detail
+- Other implementation details goes here.
+
+in the rbfm.cc we added the following functions for better development:
+
+    //create page
+    RC creatEmptyPage(FileHandle &fileHandle);
+    //get page free space
+    unsigned getPageFreeSpace(FileHandle &fileHandle, unsigned pageNum);//under assumption of adding a new slot
+    //insert record to a page
+    RC insertRecordToPage(FileHandle &fileHandle,unsigned pageNum,char* record,const unsigned recordSize,unsigned &slotNum);
+    //get record according to slot id
+    RC getRecordFromPage(const char* pageData,unsigned short slotNum,char* record);//the space of the record should be set before the function
+    //data to record
+    RC data2Record(const std::vector<Attribute> &recordDescriptor,const void* data,char* record,unsigned short &recordSize);
+    //record to data
+    RC record2Data(const std::vector<Attribute> &recordDescriptor,const char* record,void* data);//malloc before function
+    //get basic page info
+    RC getPageInfo(const void* pageData,unsigned short &freeSpaceOffset,unsigned short &numOfSlots);
+    //set page Info
+    RC setPageInfo(void* pageData,unsigned short freeSpaceOffset, unsigned short numOfSlots);
+    //get slot info according to slot number
+    RC getSlotInfo(const void* pageData,unsigned short slotNum,unsigned short &recordLength,unsigned short &recordOffset);
+    //set Slot Info
+    RC setSlotInfo(void* pageData,unsigned short slotNum,unsigned short recordLength, unsigned short recordOffset);
+    //create new slot
+    RC createNewSlot(void* pageData,unsigned short recordLength,unsigned short recordOffset);
+
+
+5. Other (optional)
+- Freely use this section to tell us about things that are related to the project 1, but not related to the other sections (optional)
+
+More details and Graphs are in DOC folder.
+

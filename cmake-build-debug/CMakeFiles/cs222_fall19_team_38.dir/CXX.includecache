@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/ycx/Documents/GitHub/cs222-fall19-team-38/rbf/pfm.h
+string
+-
+climits
+-
+fstream
+-
+
+/Users/ycx/Documents/GitHub/cs222-fall19-team-38/rbf/rbfm.cc
+rbfm.h
+/Users/ycx/Documents/GitHub/cs222-fall19-team-38/rbf/rbfm.h
+iostream
+-
+cstring
+-
+cmath
+-
+
+/Users/ycx/Documents/GitHub/cs222-fall19-team-38/rbf/rbfm.h
+string
+-
+vector
+-
+climits
+-
+pfm.h
+/Users/ycx/Documents/GitHub/cs222-fall19-team-38/rbf/pfm.h
+

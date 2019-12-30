@@ -1,0 +1,83 @@
+1. Basic information
+Team number (e.g., 01):
+#1 Student ID: chenxy2
+#1 Student Name: Chenxi Yang
+#2 Student ID: jingwm1
+#2 Student Name: Jingwen Mo
+OS (bit): 64
+gcc version: gcc/5.4.0
+
+
+2. Meta-data
+- Show your meta-data design (Tables and Columns table) and information about each column.
+
+The Tables.tbl contains table information tuples that is designed in the way of:
+Tables (table-id:int, table-name:varchar(50), file-name:varchar(50))
+
+The Columns.tbl contains column information tuples:
+Columns(table-id:int, column-name:varchar(50), column-type:int, column-length:int, column-position:int)
+
+
+3. Internal Record Format
+- Show your record format design and describe how your design satisfies O(1) field access. If not, just mention that your team hasn't implemented this feature.
+
+- Describe how you store a VarChar field.
+
+For each record implemented in project 1, I added the 8 byte header, which is 2 byte metadata + 4 byte link page Num, + 2byte link slot num, after these 8 bytes, the varchar are implemented the same as project 1.
+
+the defination of the first 2 byte metadata:
+
+     0->linkto 1->linkfrom
+    // 2->both to and from,in this case the rid is pointer to child
+    // -1=normal reocrd
+    // 0-> 0x0000
+    // 1-> 0xffff
+    // 2-> 0x00ff
+
+-----------------Below are the Description of my origional record format------
+The first 2 bytes(unsigned short) of the record indicates the number of total N fields on the record.
+Then, there are N+1 blocks, each size 2 bytes(unsigned short) to represent the byte offset from the beginning of the record to the start of the data after these N+1 blocks. if there is a null field, the offset of its begin and end are the same.
+Then after that 2bytes and N+1 blocks, I store the data sequentially according to the field.
+My design satisfy O(1) because each time you access a data, you can directly get the offset of the beginning of the data and end of the data in O(1) because each offset information takes 2 bytes and their spaces are fixed. Then read the data from begin offset and read length equals to end offset(or begin offset of next field)-begin offset, which takes O(1)
+
+- Describe how you deal with an update and delete.
+
+when update a slot, first check if it is a link slot, if its metadata tells it is a link, then get it real rid, and do all update based on its real rid.
+first, delete the slot, then check if the new record is longer than the old one, if it is longer, then check if it can be placed in the same page, if one of the above is satisfied, the new record use the same slot as the old one in same page. if there is no enough space in the page for the new record, insert a link record point with the same slot as old one and link to the new position(RID) in other page. the new position is found by iterate from the beginng of the file.
+
+when delete the slot. move all records after it to occupy the removed space. then update the slots info of all other slots the page. set the deleted slot to 0x00000000 which is avaliable for reuse.
+
+
+4. Page Format
+- Show your page format design.
+the page is 4096 bytes and the from the begin to end is the record. from end to begin is the slot, the first slot records the free space and slot number of the page.
+
+- Describe how you deal with an update and delete.
+
+when update, first move the record to make more free space, then update the slots. the slot number is same as before, but the freespace info will be updated.
+
+- Show your page format design
+
+
+5. File Format
+- Show your file format design
+
+the first 16 bytes of the file is:
+readpagecount  writepagecoutn appendpagecount totalpagescount
+each 4 bytes.
+then the page is 4096 bytes each and align sequencially
+
+
+6. Implementation Detail
+- Other implementation details goes here.
+
+when insert the data to the page, first iterate the slot, if there is no slot that can be reused, create a new one.
+
+when read the tuple, first check the record metadata header, if the head is a link to next position, just follow the link recursionaly until reaches the end.
+
+when iterate all records, just skip all record that is the intermediate link or has parent to avoid duplication.
+
+7. Other (optional)
+- Freely use this section to tell us about things that are related to the project 2, but not related to the other sections (optional)
+
+some testcases runs fine on my local machine, for example, update record test. but segment fault on server, you can see my local result screenshot on screensots folder.

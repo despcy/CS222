@@ -1,0 +1,81 @@
+1. Basic information
+Team number (e.g., 01) : 38
+#1 Student ID : chenxy2
+#1 Student Name : chenxi yang
+#2 Student ID : jingwm1
+#2 Student Name : jingwen mo
+OS (bit) : 64
+gcc version : gcc/5.4.0
+
+
+2. Catalog information about Index
+- Show your catalog information about an index (tables, columns). 
+
+each time the createIndex is called. the new index file tableName_attrbuteName.idx will be created, which is an index B+ tree.
+
+when insert/delete tuples, if the .idx file exists. insert/delete the key using ix manager.
+
+for update tuples, first delete from .idx file, then insert new key.
+
+3. Block Nested Loop Join (If you have implemented this feature)
+- Describe how your block nested loop join works (especially, how you manage the given buffers.)
+
+For the hash buffer. we use the hash map to map the left record into the hashmap. Read the tuple from left iterator one by one until the total bytes
+is not smaller than PageNum*PAGE_SIZE bytes. all these operations are done in buildNextHash() function
+
+For the output buffer, we use a vector to store all output records, and we use a variable curBufferSize to keep track of the current buffer bytes in 
+output buffer.  
+
+Each time the getNext() is called, check the output buffer vector, pop the tuple in vector(queue) first and decrease the curBufferSize
+
+if the tuple in vector output buffer is empty, iterate through the right iterator and check the left hash table, if found, push it into output buffer vector and increase the curBufferSize
+until curBufferSize is no longer smaller than a page size.
+
+when the right iterator reaches to the end, build left hash again then restart right iterator from beginning.
+
+
+4. Index Nested Loop Join (If you have implemented this feature)
+- Describe how your grace hash join works.
+
+each time the left iterator gets a tuple, use the left join attribute value as key to index scan the right iterator to find the tuple whose join attribute is the same through B+ index tree.
+for each scan of the B+ tree, save the result to the output buffer queue(a vector)
+
+when the getNextTuple() is called, first check if output buffer is queue is empty, if it is empty, do the step above. otherwise pop the queue.
+
+
+5. Grace Hash Join (If you have implemented this feature)
+- Describe how your grace hash join works (especially, in-memory structure).
+
+
+6. Aggregation
+- Describe how your aggregation (basic, group-based hash) works.
+
+basic:
+1.iterate through the input iterator
+2. read the attribute value for each tuple
+3. do the min/max/count/sum/avg of these attribute values.
+4. memcpy the result to data
+
+7. Implementation Detail
+- Have you added your own source file (.cc or .h)?
+
+- Have you implemented any optional features? Then, describe them here.
+
+- Other implementation details:
+
+uses vector<string> to save the record data in vector/hashmap, (bytes to char array)
+
+the hashmap format is:
+    std::map<int, vector<string> > intHash;
+    std::map<string, vector<string> > varCharHash;
+    std::map<float, vector<string> > realHash;
+
+
+6. Other (optional)
+- Freely use this section to tell us about things that are related to the project 4, but not related to the other sections (optional)
+
+Some of the testcases may run for a long time, for example, in openlab server:
+
+test private 01->14min
+test private 03->15min
+test private 04->15min

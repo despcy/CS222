@@ -1,0 +1,93 @@
+1. Basic information
+Team number (e.g., 01) : 38
+#1 Student ID : chenxy2
+#1 Student Name : chenxi yang
+#2 Student ID : jingwm1
+#2 Student Name : jingwenMo
+OS (bit) : 64
+gcc version : gcc/5.4.0
+
+
+2. Meta-data page in an index file
+- Show your meta-data page of an index design if you have any. 
+
+Since in the previous PFM design we didn't leave any invisible page for the metadata, we only left 4 bytes for each metadata. They are:
+Recordcount, WriteCount, AppendCount, TotalPageCount. However, we found that the TotalPageCount is always the same value as AppendCount. So in this project, we set 4 byte root page Number to replace the space for TotalPageCount. So 
+
+3. Index Entry Format
+- Show your index entry design (structure). 
+
+For leafPage: |                 keyValue                        |RID.   |
+              |4 bytes for Int and Real, actual size for Varchar|8 bytes| 
+
+For indexPage:|                 keyValue                        |PageNum of leaf/index greater than key value  |
+              |4 bytes for Int and Real, actual size for Varchar|4 bytes.                                      | 
+
+4. Page Format
+- Show your internal-page (non-leaf node) design.
+
+First 9 bytes:
+|indicator|node count|freeSpace count| First Page						                      |
+|0x00     |2 bytes.  |2 bytes.       | 4 bytes of leaf/index pageNum which is smaller or equal to the first index key |
+
+
+For Varchartype internal page only:
+
+At the end of the page |2 bytes| 2 bytes|2 bytes| 2 bytes| -> slot grow from bottom to up to indicate the offset of the end of each archer node record.
+
+
+
+- Show your leaf-page (leaf node) design.
+
+First 5 bytes:
+
+|indicator|node count|freeSpace count|
+|0xFF     |2 bytes.  |2 bytes.       |
+
+For the very end: |4 bytes integer points to nextPage(next leaf), -1 for End| 
+
+For Varchartype internal page only:
+
+At the end of the page after 4 bytes next leaf PageNumber, |2 bytes| 2 bytes|2 bytes| 2 bytes| -> slot grow from bottom to up to indicate the offset of the end of each archer node record.
+
+
+
+5. Implementation Detail
+- Have you added your own source file (.cc or .h)?
+No
+- Have you implemented non-lazy deletion? Choose Yes or No: 
+No
+- Have you implemented duplicated key handling that can span multiple pages? Choose Yes or No: 
+  If yes, please explain briefly how you have implemented this feature.
+No
+- Other implementation details:
+
+Added some private functions for better operation:
+
+compareVarchar: varchar comparation if key is archer type
+
+nonleafSearch: get the correct leaf pageNumber by search from root page
+
+searchLeaf: search the item in leafpage and return the offset and range of the item
+
+leafPageDelete: delete element and fill the empty space in the leafPage given the item offset
+
+splitLeaf:    when full ,split the leaf page into two, the new page is appended in the end of file
+
+splitIndex: when full,split the index page into two, the new page is appended in the end of file
+
+insertLeafPage: insert item into leafPage, under assumption that the page have enough space
+
+indexPageInsert: insert new item in index page
+
+indexPageUpdate: update the insert page used in insertEntry 
+
+createRoot: generate the first leaf page when the page is empty
+
+
+
+
+6. Other (optional)
+- Freely use this section to tell us about things that are related to the project 3, but not related to the other sections (optional)
+
+The design graph of the P3 is in ./DOC/P3Design.jpeg.
